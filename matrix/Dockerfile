@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base-python/amd64:6.0.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base-python/amd64:17.0.0
 FROM ${BUILD_FROM}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -7,7 +7,6 @@ ARG BUILD_ARCH=amd64
 COPY bin/yq_${BUILD_ARCH} /usr/bin/yq
 COPY requirements.txt /tmp/
 
-# Build-time deps and runtime deps separated for smaller final image
 RUN set -eux; \
     apk add --no-cache --virtual .build-deps \
         build-base \
@@ -34,7 +33,7 @@ RUN set -eux; \
         tiff \
         zlib \
         bash; \
-    pip3 install --no-cache-dir --find-links "https://wheels.home-assistant.io/alpine-3.11/${BUILD_ARCH}/" -r /tmp/requirements.txt; \
+    pip3 install --no-cache-dir --find-links "https://wheels.home-assistant.io/alpine-3.18/${BUILD_ARCH}/" -r /tmp/requirements.txt; \
     mkdir -p /opt/riot; \
     curl -fSL -o /tmp/riot.tar.gz "https://github.com/vector-im/element-web/releases/download/v1.11.112/element-v1.11.112.tar.gz"; \
     echo "0231387379f6e81d41718dd87d866d2e4168de0f4b1c9dbe0791e388e8e1dd2a  /tmp/riot.tar.gz" | sha256sum -c -; \
