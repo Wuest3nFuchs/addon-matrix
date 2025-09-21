@@ -37,7 +37,7 @@ RUN set -eux; \
     pip3 install --no-cache-dir --find-links "https://wheels.home-assistant.io/alpine-3.11/${BUILD_ARCH}/" -r /tmp/requirements.txt; \
     mkdir -p /opt/riot; \
     curl -fSL -o /tmp/riot.tar.gz "https://github.com/vector-im/element-web/releases/download/v1.11.112/element-v1.11.112.tar.gz"; \
-    echo "REPLACE_SHA256  /tmp/riot.tar.gz" | sha256sum -c -; \
+    echo "0231387379f6e81d41718dd87d866d2e4168de0f4b1c9dbe0791e388e8e1dd2a  /tmp/riot.tar.gz" | sha256sum -c -; \
     tar -xzf /tmp/riot.tar.gz -C /opt/riot --strip-components=1; \
     rm -rf /root/.cache/pip /tmp/pip-* /tmp/*.log /var/cache/apk/* /tmp/riot.tar.gz; \
     find /usr/local -type d \$ -name test -o -name tests -o -name '__pycache__' \$ -prune -exec rm -rf '{}' +; \
