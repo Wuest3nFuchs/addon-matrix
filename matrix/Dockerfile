@@ -1,66 +1,52 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base-python/amd64:6.0.0
-# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
-# Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Copy yq
 ARG BUILD_ARCH=amd64
 COPY bin/yq_${BUILD_ARCH} /usr/bin/yq
-
-# Copy Python requirements file
 COPY requirements.txt /tmp/
 
-# Setup Matrix Synapse
-RUN \
-    apk add --no-cache --virtual .build-dependencies \
-        build-base=0.5-r2 \
-        libffi-dev=3.3-r2 \
-        libjpeg-turbo-dev=2.0.6-r0	 \
-        libressl-dev=3.1.5-r0 \
-        libxslt-dev=1.1.34-r0 \
-        linux-headers=5.7.8-r0 \
-        musl-dev=1.2.2-r0 \
-        postgresql-dev=13.1-r2 \
-        zlib-dev=1.2.11-r3 \
-    \
-    && apk add --no-cache \
-        libffi=3.3-r2 \
-        libjpeg-turbo=2.0.6-r0 \
-        libpq=13.1-r2 \
-        libressl=3.1.5-r0 \
-        libxslt=1.1.34-r0 \
-        lua-resty-http=0.15-r0 \
-        nginx-mod-http-lua=1.18.0-r13 \
-        nginx=1.18.0-r13 \
-        su-exec=0.2-r1 \
-        tiff=4.1.0-r2 \
-        zlib=1.2.11-r3 \
-    \
-    && pip3 install \
-        --no-cache-dir \
-        --find-links "https://wheels.home-assistant.io/alpine-3.11/${BUILD_ARCH}/" \
-        -r /tmp/requirements.txt \
-    \
-    && mkdir -p /opt/riot \
-    && curl -J -L -o /tmp/riot.tar.gz \
-        "https://github.com/element-hq/element-web/releases/download/v1.11.112/element-v1.11.112.tar.gz" \
-    \
-    && find /usr/local \
-        \( -type d -a -name test -o -name tests -o -name '__pycache__' \) \
-        -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
-        -exec rm -rf '{}' + \
-    \
-    && apk del --purge .build-dependencies \
-    && rm -fr \
-        /etc/nginx \
-        /tmp/*
+# Build-time deps and runtime deps separated for smaller final image
+RUN set -eux; \
+    apk add --no-cache --virtual .build-deps \
+        build-base \
+        libffi-dev \
+        libjpeg-turbo-dev \
+        libressl-dev \
+        libxslt-dev \
+        linux-headers \
+        musl-dev \
+        postgresql-dev \
+        zlib-dev \
+        curl \
+        ca-certificates; \
+    apk add --no-cache \
+        libffi \
+        libjpeg-turbo \
+        libpq \
+        libressl \
+        libxslt \
+        lua-resty-http \
+        nginx-mod-http-lua \
+        nginx \
+        su-exec \
+        tiff \
+        zlib \
+        bash; \
+    pip3 install --no-cache-dir --find-links "https://wheels.home-assistant.io/alpine-3.11/${BUILD_ARCH}/" -r /tmp/requirements.txt; \
+    mkdir -p /opt/riot; \
+    curl -fSL -o /tmp/riot.tar.gz "https://github.com/vector-im/element-web/releases/download/v1.11.112/element-v1.11.112.tar.gz"; \
+    echo "REPLACE_SHA256  /tmp/riot.tar.gz" | sha256sum -c -; \
+    tar -xzf /tmp/riot.tar.gz -C /opt/riot --strip-components=1; \
+    rm -rf /root/.cache/pip /tmp/pip-* /tmp/*.log /var/cache/apk/* /tmp/riot.tar.gz; \
+    find /usr/local -type d \$ -name test -o -name tests -o -name '__pycache__' \$ -prune -exec rm -rf '{}' +; \
+    chown -R root:root /opt/riot; \
+    apk del --purge .build-deps; \
+    rm -f /etc/nginx/conf.d/default.conf || true
 
-# Copy root filesystem
 COPY rootfs /
 
-# Build arguments
 ARG BUILD_ARCH
 ARG BUILD_DATE
 ARG BUILD_DESCRIPTION
@@ -69,7 +55,6 @@ ARG BUILD_REF
 ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
 
-# Labels
 LABEL \
     io.hass.name="${BUILD_NAME}" \
     io.hass.description="${BUILD_DESCRIPTION}" \
