@@ -8,11 +8,15 @@ COPY bin/yq_${BUILD_ARCH} /usr/bin/yq
 COPY requirements.txt /tmp/
 
 RUN set -eux; \
+    # Ensure Alpine 3.18 repos (match base-python:17.0.0 which uses Alpine 3.18)
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.18/main" > /etc/apk/repositories; \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.18/community" >> /etc/apk/repositories; \
+    apk update; \
     apk add --no-cache --virtual .build-deps \
         build-base \
         libffi-dev \
         libjpeg-turbo-dev \
-        libressl-dev \
+        openssl-dev \
         libxslt-dev \
         linux-headers \
         musl-dev \
@@ -24,7 +28,7 @@ RUN set -eux; \
         libffi \
         libjpeg-turbo \
         libpq \
-        libressl \
+        openssl \
         libxslt \
         lua-resty-http \
         nginx-mod-http-lua \
