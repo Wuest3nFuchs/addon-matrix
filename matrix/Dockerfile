@@ -45,8 +45,7 @@ RUN \
     \
     && mkdir -p /opt/riot \
     && curl -J -L -o /tmp/riot.tar.gz \
-        "https://github.com/vector-im/riot-web/releases/download/v1.6.4/riot-v1.6.4.tar.gz" \
-    && tar xzf /tmp/riot.tar.gz -C /opt/riot --strip 1 \
+        "https://github.com/element-hq/element-web/releases/download/v1.11.112/element-v1.11.112.tar.gz" \
     \
     && find /usr/local \
         \( -type d -a -name test -o -name tests -o -name '__pycache__' \) \
