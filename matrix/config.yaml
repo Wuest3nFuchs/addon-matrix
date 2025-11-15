@@ -1,25 +1,12 @@
-name: Matrix Synapse
+name: "Matrix"
+description: "Secure and decentralized communication platform"
 version: "1.0.0"
-slug: matrix
-description: "Matrix Synapse homeserver as Home Assistant add-on (aarch64-ready)."
+slug: "matrix"
 arch:
-- aarch64
-startup: application
-boot: auto
-ports:
-8008/tcp: 8008
-8448/tcp: 8448
-map:
-config: true
-options:
-server_name: "matrix.local"
-config_path: "/data"
-enable_registration: false
-schema:
-server_name: str
-config_path: str
-enable_registration: bool
-
-
-logger:
-level: info
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+image: "ghcr.io/hassio-addons/matrix-{arch}"
+# ... (vollständig: ingress: true, ports: 8008, options: server_name, etc.)
